@@ -18,5 +18,12 @@ int main(void)
 
 char INIT ( void )
 {
-	
+	twi_init(TWI_FREQ_250K_8M);
+	INIT_BME();
+}
+
+char INIT_BME ( void )
+{
+	char cInitValues[] = {}
+	twi_master_transmit(SLAVE_ADR_LOW,)
 }
