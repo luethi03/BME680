@@ -155,6 +155,12 @@
     <Compile Include="avr-twi-lib.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="BME680.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="BME680.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Header.h">
       <SubType>compile</SubType>
     </Compile>
