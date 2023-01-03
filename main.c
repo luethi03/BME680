@@ -8,7 +8,7 @@
 
 #include "Header.h"
 #include <util/delay.h>
-volatile unsigned char cRecieve[5];
+
 
 int main(void)
 {

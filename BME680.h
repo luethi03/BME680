@@ -8,6 +8,10 @@
 
 #ifndef BME680_H_
 #define BME680_H_
+
+#include <avr/io.h>
+#include <stdio.h>
+
 #define VAL_RESET		0xB6
 
 #define VAL_MODE_SLEEP	0b00

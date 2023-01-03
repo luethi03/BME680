@@ -2,8 +2,12 @@
  * BME680.c
  *
  * Created: 03.01.2023 10:21:36
- *  Author: Samuel Lüthid
+ *  Author: Samuel Lüthi
  */ 
+
+#include "BME680.h"
+volatile unsigned char cRecieve[5];
+
 char INIT_BME ( void )
 {
 	unsigned char ucInitValues[2];

@@ -14,6 +14,7 @@
 #include "avr-lcd-lib.h"
 #include "avr-twi-lib.h"
 #include "Atmega2561_USART.h"
+#include "BME680.h"
 
 char INIT ( void );
 
