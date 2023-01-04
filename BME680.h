@@ -1,19 +1,16 @@
 ﻿/*
- * Header.h
+ * BME680.h
  *
- * Created: 13.12.2022 16:36:24
- *  Author: Samuel Lüthi
+ * Created: 03.01.2023 10:24:28
+ *  Author: Samuel Lüthid
  */ 
 
 
-#ifndef HEADER_H_
-#define HEADER_H_
-/*** Project includes ***/
+#ifndef BME680_H_
+#define BME680_H_
+
 #include <avr/io.h>
 #include <stdio.h>
-#include "avr-lcd-lib.h"
-#include "avr-twi-lib.h"
-#include "Atmega2561_USART.h"
 
 #define VAL_RESET		0xB6
 
@@ -120,15 +117,16 @@
 #define REG_GAS_R_MSB	0x2A
 #define	REG_GAS_R_LSB	0x2B
 
+#define TARG_TEMP_GAS	320
 
 
-char INIT ( void );
 char INIT_BME ( void );
 void START_CONVERSION( void );
 float READ_TEMP_F ( void );
 int32_t READ_TEMP_I ( void );
 float READ_PRESS ( void );
 float READ_HUM ( void );
+float READ_GAS ( void );
+void HEAT_GAS ( int8_t, int16_t, int8_t );
 
-
-#endif /* HEADER_H_ */
+#endif /* BME680_H_ */

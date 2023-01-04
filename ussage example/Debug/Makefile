@@ -40,6 +40,7 @@ C_SRCS +=  \
 ../Atmega2561_USART.c \
 ../avr-lcd-lib.c \
 ../avr-twi-lib.c \
+../BME680.c \
 ../main.c
 
 
@@ -53,24 +54,28 @@ OBJS +=  \
 Atmega2561_USART.o \
 avr-lcd-lib.o \
 avr-twi-lib.o \
+BME680.o \
 main.o
 
 OBJS_AS_ARGS +=  \
 Atmega2561_USART.o \
 avr-lcd-lib.o \
 avr-twi-lib.o \
+BME680.o \
 main.o
 
 C_DEPS +=  \
 Atmega2561_USART.d \
 avr-lcd-lib.d \
 avr-twi-lib.d \
+BME680.d \
 main.d
 
 C_DEPS_AS_ARGS +=  \
 Atmega2561_USART.d \
 avr-lcd-lib.d \
 avr-twi-lib.d \
+BME680.d \
 main.d
 
 OUTPUT_FILE_PATH +=BME680.elf
@@ -102,6 +107,13 @@ LINKER_SCRIPT_DEP+=
 	
 
 ./avr-twi-lib.o: .././avr-twi-lib.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\1.6.364\include"  -O0 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega2561 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\1.6.364\gcc\dev\atmega2561" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+./BME680.o: .././BME680.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\1.6.364\include"  -O0 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega2561 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\1.6.364\gcc\dev\atmega2561" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

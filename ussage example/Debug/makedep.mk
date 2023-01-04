@@ -8,5 +8,7 @@ avr-lcd-lib.c
 
 avr-twi-lib.c
 
+BME680.c
+
 main.c
 

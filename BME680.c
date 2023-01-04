@@ -1,121 +1,12 @@
-/*
+﻿/*
  * BME680.c
  *
- * Created: 12.12.2022 10:01:24
- * Author : Samuel Lüthi
+ * Created: 03.01.2023 10:21:36
+ *  Author: Samuel Lüthi
  */ 
 
-#include "Header.h"
+#include "BME680.h"
 volatile unsigned char cRecieve[5];
-
-int main(void)
-{
-	char cRET = 0;
-	cRET = INIT();
-	float TEMP;
-	float PRESS;
-	float HUM;
-	char Ziffern[10];
-	char TEMPRATURE[] = {'T','E','M','P','R','A','T','U','R','E',':',' '};
-	char PRESSURE[] =	{'P','R','E','S','S','U','R','E',':',' '};
-	char HUMIDITY[] =	{'H','U','M','I','D','I','T','Y',':',' '};
-	
-	if (cRET)
-	{
-	//	return 1;
-	}
-	
-    /* Replace with your application code */
-    while (1) 
-    {
-		
-		START_CONVERSION();
-		TEMP = READ_TEMP_F();
-		PRESS = READ_PRESS();
-		HUM = READ_HUM ();
-		
-		Ziffern[0] = TEMP / 10;
-		Ziffern[1] = TEMP  - Ziffern[0] * 10;
-		Ziffern[2] = (TEMP - Ziffern[0] * 10 -  Ziffern[1]) * 10;
-		Ziffern[3] = (TEMP - Ziffern[0] * 10 -  Ziffern[1] - ((double)Ziffern[2] / 10.0)) * 100;
-		for(int i = 0; i < 12; i++)
-		{
-			USART0SendByte(TEMPRATURE[i]);
-		}	
-		for (int i = 0; i < 2; i++)
-		{
-			USART0SendByte(Ziffern[i] + 0x30);
-		}
-		USART0SendByte(0x2E);
-		for (int i = 0; i < 2; i++)
-		{
-			USART0SendByte(Ziffern[i+2] + 0x30);
-		}
-		
-		USART0SendByte(',');
-		USART0SendByte(' ');
-		
-		PRESS = PRESS / 100;
-		Ziffern[0] = PRESS / 1000;
-		Ziffern[1] = (PRESS - Ziffern[0] * 1000) / 100; 
-		Ziffern[2] = (PRESS - Ziffern[0] * 1000 - Ziffern[1] * 100) / 10; 
-		Ziffern[3] = (PRESS - Ziffern[0] * 1000 - Ziffern[1] * 100 - Ziffern[2] * 10); 
-		for(int i = 0; i < 10; i++)
-		{
-			USART0SendByte(PRESSURE[i]);
-		}
-		for (int i = 0; i < 4; i++)
-		{
-			USART0SendByte(Ziffern[i] + 0x30);
-		}
-		
-		USART0SendByte(',');
-		USART0SendByte(' ');
-		
-		Ziffern[0] = HUM / 10;
-		Ziffern[1] = HUM  - Ziffern[0] * 10;
-		Ziffern[2] = (HUM - Ziffern[0] * 10 -  Ziffern[1]) * 10;
-		Ziffern[3] = (HUM - Ziffern[0] * 10 -  Ziffern[1] - ((double)Ziffern[2] / 10.0)) * 100;
-		for(int i = 0; i < 10; i++)
-		{
-			USART0SendByte(HUMIDITY[i]);
-		}
-		for (int i = 0; i < 2; i++)
-		{
-			USART0SendByte(Ziffern[i] + 0x30);
-		}
-		USART0SendByte(0x2E);
-		for (int i = 0; i < 2; i++)
-		{
-			USART0SendByte(Ziffern[i+2] + 0x30);
-		}
-		
-		
-		USART0SendByte(0x0A);
-		
-    }
-}
-
-char INIT ( void )
-{
-	char cRET = 0;
-	USART0Init(103);
-
-	
-	cRET = twi_init(TWI_FREQ_100K_8M);
-	cRET = INIT_BME();
-
-	USART0SendByte(0x21);
-	
-	if (cRET)
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-}
 
 char INIT_BME ( void )
 {
@@ -158,7 +49,7 @@ char INIT_BME ( void )
 	
 	/*** WRITE CTRL_HUM REGISTER ***/
 	ucInitValues[0] = REG_CTRL_GAS_1;
-	ucInitValues[1] = (0b00010000 & (VAL_RUN_GAS_OFF << 4));
+	ucInitValues[1] = (0b00010000 & (VAL_HEAT_ON << 4));
 	twi_master_transmit(SLAVE_ADR_LOW, ucInitValues, 2, 0);
 	
 	return 0;
@@ -180,7 +71,7 @@ void START_CONVERSION ( void )
 float READ_TEMP_F ( void )
 {
 	int32_t t_fine = READ_TEMP_I();
-	return t_fine / 5120.0;	
+	return t_fine / 5120.0;
 }
 
 int32_t READ_TEMP_I ( void )
@@ -338,7 +229,7 @@ float READ_HUM ( void )
 	int8_t par_h5  = 0;
 	int8_t par_h6  = 0;
 	int8_t par_h7  = 0;
-		
+	
 	cAdrWork = REG_HUM_MSB;
 	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
 	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 2);
@@ -379,7 +270,7 @@ float READ_HUM ( void )
 	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
 	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 1);
 	par_h7 = cRecieve[0];
-		
+	
 	var1 = hum_adc - (((double)par_h1 * 16.0) + (((double)par_h3 / 2.0) * t_comp));
 	var2 = var1 * (((double)par_h2 / 262144.0) * (1.0 + (((double)par_h4 / 16384.0) * t_comp) + (((double)par_h5 / 1048576.0) * t_comp * t_comp)));
 	var3 = (double)par_h6 / 16384.0;
@@ -391,76 +282,122 @@ float READ_HUM ( void )
 	return hum_comp;
 }
 
-
-/*
-float READ_HUM ( void )
+float READ_GAS ( void )
 {
 	double t_comp = READ_TEMP_F();
 	unsigned char cAdrWork = 0;
+	unsigned char ucValWork[2];
 	double var1 = 0;
-	double var2 = 0;
-	double var3 = 0;
-	double var4 = 0;
-	double var5 = 0;
-	double var6 = 0;
-	double hum_comp = 0;
-	uint32_t hum_adc = 0;
-	uint16_t par_h1  = 0;
-	uint16_t par_h2  = 0;
-	int8_t par_h3  = 0;
-	int8_t par_h4  = 0;
-	int8_t par_h5  = 0;
-	int8_t par_h6  = 0;
-	int8_t par_h7  = 0;
-		
-	cAdrWork = REG_HUM_MSB;
+	double gas_res = 0;
+	double range_switching_error = 0;
+	double gas_range = 0;
+	uint32_t gas_adc = 0;
+	int8_t par_g1  = 0;
+	int16_t par_g2  = 0;
+	int8_t par_g3  = 0;
+	
+	cAdrWork = 0xED;
 	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
 	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 2);
-	hum_adc = (0xFF00 & (cRecieve[0] << 8)) | (0x00FF & (cRecieve[1]));
+	par_g1 = cRecieve[0];
 	
-	
-	cAdrWork = 0xE2;
+	cAdrWork = 0xEB;
 	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
 	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 2);
-	par_h1 = (0x0FF0 & (cRecieve[1] << 4)) | (0x000F & (cRecieve[0]));
+	par_g2 = (0xFF00 & (cRecieve[1] << 8)) | (0x00FF & (cRecieve[0] & 0xF0));
 	
-	cAdrWork = 0xE1;
+	cAdrWork = 0xEE;
+	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
+	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 1);
+	par_g3 = cRecieve[0];
+	
+	
+	HEAT_GAS(par_g1, par_g2, par_g3);
+	_delay_ms(100);
+	
+	cAdrWork = REG_GAS_R_MSB;
 	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
 	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 2);
-	par_h2 = (0x0FF0 & (cRecieve[0] << 4)) | (0x000F & ((cRecieve[1] & 0xF0) >> 4));
+	gas_adc = (0xFF00 & (cRecieve[1] << 2)) | (0x00FF & (cRecieve[0] >> 6));
+	//_delay_ms(200);
 	
-	cAdrWork = 0xE4;
+	
+	cAdrWork = 0x2B;
 	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
 	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 1);
-	par_h3 = cRecieve[0];
+	gas_range = (0x0F & (cRecieve[0]));
 	
-	cAdrWork = 0xE5;
+	cAdrWork = 0x04;
 	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
 	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 1);
-	par_h4 = cRecieve[0];
+	range_switching_error = cRecieve[0];
 	
-	cAdrWork = 0xE6;
-	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
-	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 1);
-	par_h5 = cRecieve[0];
+	var1 = (1340.0 + 5.0 * range_switching_error) * gas_range;
+	gas_res = var1 * gas_range / (gas_adc - 512.0 + var1);
 	
-	cAdrWork = 0xE7;
-	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
-	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 1);
-	par_h6 = cRecieve[0];
+	/*** WRITE CTRL_GAS_0 REGISTER ***/
+	ucValWork[0] = REG_CTRL_GAS_1;
+	ucValWork[1] = 0x00;
+	twi_master_transmit(SLAVE_ADR_LOW, ucValWork, 2, 0);
 	
-	cAdrWork = 0xE4;
-	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
-	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 1);
-	par_h7 = cRecieve[0];
-		
-	var1 = hum_adc - (((double)par_h1 * 16.0) + (((double)par_h3 / 2.0) * t_comp));
-	var2 = var1 * (((double)par_h2 / 262144.0) * (1.0 + (((double)par_h4 / 16384.0) * t_comp) + (((double)par_h5 / 1048576.0) * t_comp * t_comp)));
-	var3 = (double)par_h6 / 16384.0;
+	return gas_res;
+}
 
-	var4 = (double)par_h7 / 2097152.0;
-	hum_comp = var2 +((var3 + (var4 * t_comp)) * var2 * var2);
+void HEAT_GAS ( int8_t par_g1, int16_t par_g2, int8_t par_g3 )
+{
+	unsigned char cAdrWork = 0;
+	unsigned char ucValWork[2];
+	int32_t var1 = 0;
+	int32_t var2 = 0;
+	int32_t var3 = 0;
+	int32_t var4 = 0;
+	int32_t var5 = 0;
+	int32_t res_heat_x100 = 0;
+	uint8_t res_heat_x = 0;
+	int8_t res_heat_range = 0;
+	int8_t res_heat_value = 0;
+	double ambient_temp = 0;
+	ambient_temp = READ_TEMP_F();
 	
+	cAdrWork = 0x02;
+	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
+	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 1);
+	res_heat_range = (0x03 & (cRecieve[0] >> 4));
 	
-	return hum_comp;
-}*/
+	cAdrWork = 0x00;
+	twi_master_transmit(SLAVE_ADR_LOW, &cAdrWork, 1, 0);
+	twi_master_receive(SLAVE_ADR_LOW, cRecieve, 1);
+	res_heat_value = (0xFF & (cRecieve[0]));
+	
+	var1 = (((int32_t)ambient_temp * par_g3) / 10) << 8;
+	var2 = (par_g1 + 784) * (((((par_g2 + 154009) * TARG_TEMP_GAS * 5) / 100) + 3276800) /10);
+	var3 = var1 + (var2 >> 1);
+	var4 = (var3 / (res_heat_range + 4));
+	var5 = (131 * res_heat_value) + 65536;
+	res_heat_x100 = (int32_t)(((var4 / var5) - 250) * 34);
+	res_heat_x = (uint8_t)((res_heat_x100 + 50) / 100);
+	
+	ucValWork[0] = REG_GAS_WAIT_0;
+	ucValWork[1] = 0x59;
+	twi_master_transmit(SLAVE_ADR_LOW, ucValWork, 2, 0);
+	
+	/*** WRITE RES_WAIT REGISTER ***/
+	ucValWork[0] = REG_RES_WAIT_0;
+	ucValWork[1] = res_heat_x;
+	twi_master_transmit(SLAVE_ADR_LOW, ucValWork, 2, 0);
+	
+	/*** WRITE CTRL_GAS_1 REGISTER ***/
+	ucValWork[0] = REG_CTRL_GAS_0;
+	ucValWork[1] = 0x00;
+	twi_master_transmit(SLAVE_ADR_LOW, ucValWork, 2, 0);
+	
+	/*** WRITE CTRL_GAS_0 REGISTER ***/
+	ucValWork[0] = REG_CTRL_GAS_1;
+	ucValWork[1] = 0x10;
+	twi_master_transmit(SLAVE_ADR_LOW, ucValWork, 2, 0);
+	
+	//_delay_ms(100);
+	
+	START_CONVERSION();
+	
+}
